@@ -20,9 +20,7 @@
 
 4. [Build errors](#build-error)
 
-    i. [Use earlier repo](#use-earlier-repo)
-
-5. [Nyameko Tips](#nyameko-lisa-tips)
+5. [Tips](#tips)
 
 ## Get MILC
 

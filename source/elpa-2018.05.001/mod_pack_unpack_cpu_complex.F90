@@ -39,25 +39,29 @@
 !    any derivatives of ELPA under the same license that we chose for
 !    the original distribution, the GNU Lesser General Public License.
 !
-! Author: Lorenz Huedepohl, MPCDF
+! This file was written by A. Marek, MPCDF
 
-module aligned_mem
-  use, intrinsic :: iso_c_binding
+module pack_unpack_cpu_complex
+#include "config-f90.h"
+  implicit none
 
-  interface
-    function posix_memalign(memptr, alignment, size) result(error) bind(C, name="posix_memalign")
-      import c_int, c_intptr_t, c_ptr
-      integer(kind=c_int) :: error
-      type(c_ptr), intent(inout) :: memptr
-      integer(kind=c_intptr_t), intent(in), value :: alignment, size
-    end function
-  end interface
+  private
 
-  interface
-    subroutine free(ptr) bind(C, name="free")
-      import c_ptr
-      type(c_ptr), value :: ptr
-    end subroutine
-  end interface
+#ifdef WITH_OPENMP
+  public pack_row_complex_cpu_openmp_double, unpack_row_complex_cpu_openmp_double
+#else
+  public pack_row_complex_cpu_double, unpack_row_complex_cpu_double
+#endif
+
+  contains
+
+  !complex double precision
+#define COMPLEXCASE 1
+#define DOUBLE_PRECISION 1
+#include "precision_macros.h"
+#include "pack_unpack_cpu.F90"
+#undef COMPLEXCASE
+#undef DOUBLE_PRECISION
+
 
 end module

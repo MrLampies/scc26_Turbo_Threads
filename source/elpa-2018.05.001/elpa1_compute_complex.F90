@@ -15,6 +15,9 @@
 !      and
 !    - IBM Deutschland GmbH
 !
+!    This particular source code file contains additions, changes and
+!    enhancements authored by Intel Corporation which is not part of
+!    the ELPA consortium.
 !
 !    More information can be found here:
 !    http://elpa.mpcdf.mpg.de/
@@ -39,25 +42,59 @@
 !    any derivatives of ELPA under the same license that we chose for
 !    the original distribution, the GNU Lesser General Public License.
 !
-! Author: Lorenz Huedepohl, MPCDF
+!
+! ELPA1 -- Faster replacements for ScaLAPACK symmetric eigenvalue routines
+!
+! Copyright of the original code rests with the authors inside the ELPA
+! consortium. The copyright of any additional modifications shall rest
+! with their original authors, but shall adhere to the licensing terms
+! distributed along with the original code in the file "COPYING".
 
-module aligned_mem
-  use, intrinsic :: iso_c_binding
+#include "config-f90.h"
+!> \brief Fortran module which contains the source of ELPA 1stage
+module elpa1_compute_complex
+  use elpa_utilities
+  use mpi
+  implicit none
 
-  interface
-    function posix_memalign(memptr, alignment, size) result(error) bind(C, name="posix_memalign")
-      import c_int, c_intptr_t, c_ptr
-      integer(kind=c_int) :: error
-      type(c_ptr), intent(inout) :: memptr
-      integer(kind=c_intptr_t), intent(in), value :: alignment, size
-    end function
+  PRIVATE ! set default to private
+
+  public :: hh_transform_complex_double
+  public :: hh_transform_complex
+  public :: elpa_reduce_add_vectors_complex_double
+  public :: elpa_reduce_add_vectors_complex
+  public :: elpa_transpose_vectors_complex_double
+  public :: elpa_transpose_vectors_complex
+
+  interface hh_transform_complex
+    module procedure hh_transform_complex_double
   end interface
 
-  interface
-    subroutine free(ptr) bind(C, name="free")
-      import c_ptr
-      type(c_ptr), value :: ptr
-    end subroutine
+  interface elpa_reduce_add_vectors_complex
+    module procedure elpa_reduce_add_vectors_complex_double
   end interface
 
-end module
+  interface elpa_transpose_vectors_complex
+    module procedure elpa_transpose_vectors_complex_double
+  end interface
+
+  contains
+
+
+#define COMPLEXCASE 1
+#define DOUBLE_PRECISION 1
+#include "precision_macros.h"
+#include "elpa_transpose_vectors.F90"
+#include "elpa_reduce_add_vectors.F90"
+
+!#include "elpa1_tridiag_template.F90"
+!#include "elpa1_trans_ev_template.F90"
+#include "elpa1_tools_template.F90"
+
+#define ALREADY_DEFINED 1
+
+#undef DOUBLE_PRECISION
+#undef COMPLEXCASE
+
+
+end module elpa1_compute_complex

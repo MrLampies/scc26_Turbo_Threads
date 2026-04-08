@@ -39,25 +39,44 @@
 !    any derivatives of ELPA under the same license that we chose for
 !    the original distribution, the GNU Lesser General Public License.
 !
-! Author: Lorenz Huedepohl, MPCDF
+!
+! --------------------------------------------------------------------------------------------------
+!
+! This file contains the compute intensive kernels for the Householder transformations.
+! It should be compiled with the highest possible optimization level.
+!
+! On Intel use -O3 -xSSE4.2 (or the SSE level fitting to your CPU)
+!
+! Copyright of the original code rests with the authors inside the ELPA
+! consortium. The copyright of any additional modifications shall rest
+! with their original authors, but shall adhere to the licensing terms
+! distributed along with the original code in the file "COPYING".
+!
+! --------------------------------------------------------------------------------------------------
+#include "config-f90.h"
+#ifdef USE_ASSUMED_SIZE
+#define PACK_REAL_TO_COMPLEX
+#else
+#undef PACK_REAL_TO_COMPLEX
+#endif
 
-module aligned_mem
-  use, intrinsic :: iso_c_binding
+#ifndef USE_ASSUMED_SIZE
+module real_generic_kernel
 
-  interface
-    function posix_memalign(memptr, alignment, size) result(error) bind(C, name="posix_memalign")
-      import c_int, c_intptr_t, c_ptr
-      integer(kind=c_int) :: error
-      type(c_ptr), intent(inout) :: memptr
-      integer(kind=c_intptr_t), intent(in), value :: alignment, size
-    end function
-  end interface
+  private
+  public double_hh_trafo_real_generic_double
 
-  interface
-    subroutine free(ptr) bind(C, name="free")
-      import c_ptr
-      type(c_ptr), value :: ptr
-    end subroutine
-  end interface
+  contains
+#endif
 
-end module
+#define REALCASE 1
+#define DOUBLE_PRECISION 1
+#include "precision_macros.h"
+#include "real_template.F90"
+#undef REALCASE
+#undef DOUBLE_PRECISION
+
+#ifndef USE_ASSUMED_SIZE
+end module real_generic_kernel
+#endif
+! --------------------------------------------------------------------------------------------------
